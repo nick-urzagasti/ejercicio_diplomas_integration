@@ -1,5 +1,6 @@
 package com.meli.obtenerdiploma.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -15,8 +16,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import javax.swing.text.AbstractDocument;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Set;
 
@@ -102,4 +105,73 @@ public class StudentControllerIntegrationTest {
     }
 
 
+    @Test
+    void getStudentOkTest() throws Exception {
+        StudentDTO expected =  new StudentDTO(
+                1L,
+                "Juan",
+                null,
+                null,
+                List.of(
+                        new SubjectDTO(
+                                "Matematica",
+                                7.0
+                        ),
+                        new SubjectDTO(
+                                "Fisica", 7.0
+
+                        ),
+                        new SubjectDTO("Quimica", 7.0)
+                )
+        );
+
+        String expectedResponse = objectMapper.writeValueAsString(expected);
+
+        MvcResult result = mockMvc.perform(get("/student/getStudent/{id}",1L))
+                .andDo(print())
+                .andExpect(content().contentType("application/json"))
+                .andReturn();
+        assertEquals(expectedResponse, result.getResponse().getContentAsString());
+
+    }
+
+    @Test
+    void modifyStudent() throws  Exception {
+        {
+            StudentDTO student = new StudentDTO();
+            student.setId(1L);
+            student.setStudentName("Juan");
+            student.setSubjects(List.of(
+                    new SubjectDTO(
+                            "Matematica",
+                            1.0
+                    ),
+                    new SubjectDTO(
+                            "Fisica", 7.0
+
+                    ),
+                    new SubjectDTO("Quimica", 6.0)
+
+            ));
+
+            String jsonStudentDto  = this.objectMapper.writeValueAsString(student);
+
+            mockMvc.perform(post("/student/modifyStudent")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonStudentDto))
+                    .andExpect(status().isOk());
+
+        }
+
+
+    }
+
+
+    @Test
+    void deleteStudent() throws  Exception {
+        long id  = 1L;
+        mockMvc.perform(get("/student/removeStudent/{id}/",id))
+                .andExpect(status().isOk());
+
+    }
 }
