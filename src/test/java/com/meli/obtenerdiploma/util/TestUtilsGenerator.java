@@ -44,7 +44,45 @@ public class TestUtilsGenerator {
         writer.print("[]");
         writer.close();
     }
+    public static void loadUserFile(){
+        Properties properties = new Properties();
 
+        try {
+            properties.load(new ClassPathResource("application.properties").getInputStream());
+            SCOPE = properties.getProperty("api.scope");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        PrintWriter writer = null;
+
+        try {
+            writer = new PrintWriter(ResourceUtils.getFile("./src/" + SCOPE + "/resources/users.json"));
+        } catch (
+                IOException e) {
+            e.printStackTrace();
+        }
+
+        writer.print("[{\n" +
+                "    \"id\": 1,\n" +
+                "    \"studentName\": \"Juan\",\n" +
+                "    \"subjects\": [\n" +
+                "      {\n" +
+                "        \"name\": \"Matematica\",\n" +
+                "        \"score\": 7\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"name\": \"Fisica\",\n" +
+                "        \"score\": 7\n" +
+                "      },\n" +
+                "      {\n" +
+                "        \"name\": \"Quimica\",\n" +
+                "        \"score\": 7\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }]");
+        writer.close();
+    }
     public static StudentDTO getStudentWith3Subjects(String name) {
         SubjectDTO subject1 = new SubjectDTO("Matemática", 8.0);
         SubjectDTO subject2 = new SubjectDTO("Lengua", 6.0);

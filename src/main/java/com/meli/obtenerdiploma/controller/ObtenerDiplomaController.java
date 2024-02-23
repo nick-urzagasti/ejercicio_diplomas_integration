@@ -13,7 +13,6 @@ public class ObtenerDiplomaController {
 
     @Autowired
     IObtenerDiplomaService service;
-
     @GetMapping("/analyzeScores/{studentId}")
     public StudentDTO analyzeScores(@PathVariable Long studentId) {
         return service.analyzeScores(studentId);

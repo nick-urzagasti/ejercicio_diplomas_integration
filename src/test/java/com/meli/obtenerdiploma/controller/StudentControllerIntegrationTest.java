@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.meli.obtenerdiploma.model.StudentDTO;
 import com.meli.obtenerdiploma.model.SubjectDTO;
+import com.meli.obtenerdiploma.util.TestUtilsGenerator;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,6 +18,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import javax.swing.text.AbstractDocument;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,10 +32,45 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class StudentControllerIntegrationTest {
     @Autowired
     MockMvc mockMvc;
-
+    @BeforeEach @AfterEach
+    public void loadStudents(){
+        TestUtilsGenerator.loadUserFile();
+    }
     private ObjectWriter objectMapper;
     public StudentControllerIntegrationTest(){
         this.objectMapper =  new ObjectMapper().configure(SerializationFeature.WRAP_ROOT_VALUE, false).writer();
+
+    }
+    @Test
+    void listStudentIntegrationOk() throws Exception{
+        Set<StudentDTO> lista = Set.of(
+                new StudentDTO(
+                        1L,
+                        "Juan",
+                        null,
+                        null,
+                        List.of(
+                                new SubjectDTO(
+                                        "Matematica",
+                                        7.0
+                                ),
+                                new SubjectDTO(
+                                        "Fisica", 7.0
+
+                                ),
+                                new SubjectDTO("Quimica", 7.0)
+                        )
+                )
+        );
+
+        String expectedResponse = objectMapper.writeValueAsString(lista);
+        MvcResult result = mockMvc
+                .perform(get("/student/listStudents"))
+                .andDo(print())
+                .andExpect(content().contentType("application/json"))
+                .andReturn()
+                ;
+        assertEquals(expectedResponse, result.getResponse().getContentAsString());
 
     }
     @Test
@@ -55,42 +94,12 @@ public class StudentControllerIntegrationTest {
 
         String jsonStudentDto  = this.objectMapper.writeValueAsString(studentTesst);
 
-        mockMvc.perform(post("registerStudent/")
+        mockMvc.perform(post("/student/registerStudent")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonStudentDto))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void listStudentIntegrationOk() throws Exception{
-        List<StudentDTO> lista = List.of(
-                new StudentDTO(
-                        1L,
-                        "Juan",
-                        "El alumno Juan ha obtenido un promedio de 7.00. Puedes mejorar.",
-                        7.0,
-                        List.of(
-                                new SubjectDTO(
-                                        "Matematica",
-                                        7.0
-                                ),
-                                new SubjectDTO(
-                                        "Fisica", 7.0
-
-                                ),
-                                new SubjectDTO("Quimica", 7.0)
-                        )
-                )
-        );
-
-        String expectedResponse = objectMapper.writeValueAsString(lista);
-        MvcResult result = mockMvc
-                .perform(get("/listStudents"))
-                .andDo(print())
-                .andExpect(content().contentType("application/json"))
-                .andReturn()
-                ;
-        assertEquals(expectedResponse, result.getResponse().getContentAsString());
 
     }
+
+
 }

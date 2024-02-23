@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.meli.obtenerdiploma.model.StudentDTO;
 import com.meli.obtenerdiploma.model.SubjectDTO;
+import com.meli.obtenerdiploma.util.TestUtilsGenerator;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +29,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ObtenerDiplomaControllerIntegrationTest {
     @Autowired
     MockMvc mockMvc;
+    @BeforeEach
+    @AfterEach
+    public void loadStudents(){
+        TestUtilsGenerator.loadUserFile();
+    }
     @Test
     void analyzeScoresIntegrationOKTest() throws Exception {
         StudentDTO expectedStudent = new StudentDTO(
@@ -47,7 +55,8 @@ class ObtenerDiplomaControllerIntegrationTest {
         );
         ObjectWriter objectWriter = new ObjectMapper().configure(SerializationFeature.WRAP_ROOT_VALUE, false).writer();
         String expectedResponse = objectWriter.writeValueAsString(expectedStudent);
-        MvcResult mvcResult =  mockMvc.perform(get("/analyzeScores/{studentId}", 1L))
+        MvcResult mvcResult =  mockMvc
+                .perform(get("/analyzeScores/{studentId}", 1L))
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
                 .andReturn();
