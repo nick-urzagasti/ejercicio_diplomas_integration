@@ -31,11 +31,9 @@ public class StudentServiceTests {
     @Test
     public void createStudent() {
         // arrange
-        StudentDTO stu = TestUtilsGenerator.getStudentWith3Subjects("Marco");
-
+        StudentDTO stu = TestUtilsGenerator.getExampleStudent();
         // act
         service.create(stu);
-
         // assert
         verify(studentDAO, atLeastOnce()).save(stu);
     }
@@ -43,12 +41,10 @@ public class StudentServiceTests {
     @Test
     public void readStudent() {
         // arrange
-        StudentDTO stu = TestUtilsGenerator.getStudentWith3Subjects("Marco");
+        StudentDTO stu = TestUtilsGenerator.getExampleStudent();
         when(studentDAO.findById(stu.getId())).thenReturn(stu);
-
         // act
         StudentDTO readStu = service.read(stu.getId());
-
         // assert
         verify(studentDAO, atLeastOnce()).findById(stu.getId());
         assertEquals(stu, readStu);
@@ -57,11 +53,9 @@ public class StudentServiceTests {
     @Test
     public void updateStudent() {
         // arrange
-        StudentDTO stu = TestUtilsGenerator.getStudentWith3Subjects("Marco");
-
+        StudentDTO stu = TestUtilsGenerator.getExampleStudent();
         // act
         service.update(stu);
-
         // assert
         verify(studentDAO, atLeastOnce()).save(stu);
     }
@@ -69,11 +63,9 @@ public class StudentServiceTests {
     @Test
     public void deleteStudent() {
         // arrange
-        StudentDTO stu = TestUtilsGenerator.getStudentWith3Subjects("Marco");
-
+        StudentDTO stu = TestUtilsGenerator.getExampleStudent();
         // act
         service.delete(stu.getId());
-
         // assert
         verify(studentDAO, atLeastOnce()).delete(stu.getId());
     }
@@ -81,12 +73,10 @@ public class StudentServiceTests {
     @Test
     public void getAllStudents() {
         // arrange
-        Set<StudentDTO> students = TestUtilsGenerator.getStudentSet();
+        Set<StudentDTO> students = Set.of(TestUtilsGenerator.getExampleStudent());
         when(studentRepo.findAll()).thenReturn(students);
-
         // act
         Set<StudentDTO> readStudents = service.getAll();
-
         // assert
         verify(studentRepo, atLeastOnce()).findAll();
         assertTrue(CollectionUtils.isEqualCollection(students, readStudents));

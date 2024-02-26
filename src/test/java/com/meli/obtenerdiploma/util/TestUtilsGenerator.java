@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.meli.obtenerdiploma.model.StudentDTO;
 import com.meli.obtenerdiploma.model.SubjectDTO;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
@@ -19,50 +18,38 @@ import java.util.*;
 
 public class TestUtilsGenerator {
 
-    private static String SCOPE;
-    private static ObjectWriter mapper;
-
     public static void emptyUsersFile() {
-        Properties properties = new Properties();
-
-        try {
-            properties.load(new ClassPathResource("application.properties").getInputStream());
-            SCOPE = properties.getProperty("api.scope");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         PrintWriter writer = null;
-
         try {
-            writer = new PrintWriter(ResourceUtils.getFile("./src/" + SCOPE + "/resources/users.json"));
+            writer = new PrintWriter(ResourceUtils.getFile("./src/test/resources/users.json"));
         } catch (
                 IOException e) {
             e.printStackTrace();
         }
-
+        assert writer != null;
         writer.print("[]");
         writer.close();
     }
+    public static void erraseFile() throws FileNotFoundException {
+        File usersJson = ResourceUtils.getFile("./src/test/resources/users.json");
+        usersJson.delete();
+    }
+    public static void createFile() throws IOException {
+        File resources = ResourceUtils.getFile("./src/test/resources/users.json");
+        resources.createNewFile();
+        emptyUsersFile();
+    }
+
     public static void loadUserFile(){
-        Properties properties = new Properties();
-
-        try {
-            properties.load(new ClassPathResource("application.properties").getInputStream());
-            SCOPE = properties.getProperty("api.scope");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         PrintWriter writer = null;
-
         try {
-            writer = new PrintWriter(ResourceUtils.getFile("./src/" + SCOPE + "/resources/users.json"));
+            writer = new PrintWriter(ResourceUtils.getFile("./src/test/resources/users.json"));
         } catch (
                 IOException e) {
             e.printStackTrace();
         }
 
+        assert writer != null;
         writer.print("[{\n" +
                 "    \"id\": 1,\n" +
                 "    \"studentName\": \"Juan\",\n" +
@@ -83,97 +70,45 @@ public class TestUtilsGenerator {
                 "  }]");
         writer.close();
     }
-    public static StudentDTO getStudentWith3Subjects(String name) {
-        SubjectDTO subject1 = new SubjectDTO("Matemática", 8.0);
-        SubjectDTO subject2 = new SubjectDTO("Lengua", 6.0);
-        SubjectDTO subject3 = new SubjectDTO("Física", 4.0);
+    public static StudentDTO getExampleStudent(){
+        return new StudentDTO(
+                1L,
+                "Juan",
+                null,
+                null,
+                List.of(
+                        new SubjectDTO(
+                                "Matematica",
+                                7.0
+                        ),
+                        new SubjectDTO(
+                                "Fisica", 7.0
 
-        List<SubjectDTO> subjects = new ArrayList<>();
-        subjects.add(subject1);
-        subjects.add(subject2);
-        subjects.add(subject3);
+                        ),
+                        new SubjectDTO("Quimica", 7.0)
+                )
+        );
+    }
+    public static StudentDTO getExampleStudentWith9(){
+        return new StudentDTO(
+                1L,
+                "Juan",
+                null,
+                null,
+                List.of(
+                        new SubjectDTO(
+                                "Matematica",
+                                9.0
+                        ),
+                        new SubjectDTO(
+                                "Fisica", 9.0
 
-        StudentDTO stu = new StudentDTO();
-        stu.setId(9999L);
-        stu.setStudentName(name);
-        stu.setSubjects(subjects);
-
-        return stu;
+                        ),
+                        new SubjectDTO("Quimica", 9.0)
+                )
+        );
     }
 
-    public static StudentDTO getStudentWith3SubjectsAverageOver9(String name) {
-        SubjectDTO subject1 = new SubjectDTO("Matemática", 8.0);
-        SubjectDTO subject2 = new SubjectDTO("Lengua", 9.0);
-        SubjectDTO subject3 = new SubjectDTO("Física", 10.0);
 
-        List<SubjectDTO> subjects = new ArrayList<>();
-        subjects.add(subject1);
-        subjects.add(subject2);
-        subjects.add(subject3);
-
-        StudentDTO stu = new StudentDTO();
-        stu.setId(9999L);
-        stu.setStudentName(name);
-        stu.setSubjects(subjects);
-
-        return stu;
-    }
-
-    public static StudentDTO getStudentWithId(Long id) {
-        SubjectDTO subject1 = new SubjectDTO("Matemática", 8.0);
-        SubjectDTO subject2 = new SubjectDTO("Lengua", 6.0);
-        SubjectDTO subject3 = new SubjectDTO("Física", 4.0);
-
-        List<SubjectDTO> subjects = new ArrayList<>();
-        subjects.add(subject1);
-        subjects.add(subject2);
-        subjects.add(subject3);
-
-        StudentDTO stu = new StudentDTO();
-        stu.setId(id);
-        stu.setStudentName("student1");
-        stu.setSubjects(subjects);
-
-        return stu;
-    }
-
-    public static Set<StudentDTO> getStudentSet() {
-        StudentDTO stu1 = getStudentWith3Subjects("Marco");
-        StudentDTO stu2 = getStudentWith3Subjects("Marco Polo");
-        StudentDTO stu3 = getStudentWith3Subjects("Julio");
-        StudentDTO stu4 = getStudentWith3Subjects("Julio Cesar");
-
-        return new HashSet<StudentDTO>(){{add(stu1); add(stu2); add(stu3); add(stu4);}};
-    }
-
-    public static void appendNewStudent(StudentDTO stu) {
-        mapper = new ObjectMapper()
-                .configure(SerializationFeature.WRAP_ROOT_VALUE, false)
-                .writer().withDefaultPrettyPrinter();
-
-        PrintWriter writer = null;
-
-        try {
-            String content = Files.readString(new File("./src/" + SCOPE + "/resources/users.json").getAbsoluteFile().toPath(), StandardCharsets.US_ASCII);
-            writer = new PrintWriter(ResourceUtils.getFile("./src/" + SCOPE + "/resources/users.json"));
-
-            try {
-                String studentAsString = mapper.writeValueAsString(stu);
-                writer.print(content.substring(0, content.length()-1));
-                if (content.length()>2) writer.print(", ");
-                writer.print(studentAsString);
-                writer.print("]");
-            } catch (JsonProcessingException jsonProcessingException) {
-                jsonProcessingException.printStackTrace();
-            }
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        writer.close();
-    }
 
 }
